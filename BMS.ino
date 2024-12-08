@@ -9,7 +9,7 @@
 // To Store the battery reading
 int BatteryReadingValues[NumOfBatteries];
 
-// These Arrays contain the pins of every catogary
+// These Arrays contain the pins of every catogory
 int transistor[NumOfBatteries] = {2,3,4};
 int opto1[NumOfBatteries] = {5,6,7};
 int opto2[NumOfBatteries] ={8,9,10};
@@ -22,7 +22,7 @@ int EnableAnalogRead = 11;
 int FlybackEnable = 12;
 int FlybackReadingPin = A1;
 
-// Variable that help in finding the Lowest battey 
+// Variable that help in finding the Lowest battery 
 int LowestIndex = 0;
 int LowestCharge = HighestValue;
 
