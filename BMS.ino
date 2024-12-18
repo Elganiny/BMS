@@ -1,7 +1,7 @@
-#define DEBUG_MODE true  // Set to false when exporting to Excel
+#define DEBUG_MODE false  // Set to false when exporting to Excel
 
 #define NumOfBatteries 3
-#define CapChargeTime 100
+#define CapChargeTime 300
 #define BatChargeTime 10000
 #define HighestValue 1027
 #define FlybackThreshold 5
@@ -10,9 +10,9 @@
 int BatteryReadingValues[NumOfBatteries];
 
 // These Arrays contain the pins of every catogory
-int transistor[NumOfBatteries] = {2,3,4};
-int opto1[NumOfBatteries] = {5,6,7};
-int opto2[NumOfBatteries] ={8,9,10};
+int transistor[NumOfBatteries] = {8,9,10};
+int opto1[NumOfBatteries] = {2,3,4};
+int opto2[NumOfBatteries] ={5,6,7};
 
 // Analog and its Enable that controls the reading the battery values 
 int BatteryReadingPin = A0;
@@ -56,6 +56,7 @@ void ReadBattery(int index){
   delay(CapChargeTime);
   // Disable the optocoupler that is connected to the batteries
   digitalWrite(opto2[index],LOW);
+  //digitalWrite(opto1[index],LOW); //Test
   // Enable the opto that insulate the Analog pin
   digitalWrite(EnableAnalogRead,HIGH);
   // Reading the voltage of the selected Capacitor and Store the it
@@ -87,6 +88,9 @@ void CheckLowestBattery(){
   TurnOffAllTransistors();
   // Turn on the transistor of the lowest battery to charge it
   digitalWrite(transistor[LowestIndex], HIGH);
+  Serial.print(digitalRead(transistor[LowestIndex]));
+  // digitalWrite(8, HIGH);
+  // Serial.print(digitalRead(8));
 }
 
 void FlybackControl() {
@@ -96,7 +100,7 @@ void FlybackControl() {
 
   // Debugging: Print the flyback voltage
   DebugLog("Flyback Voltage: ");
-  DebugLog(flybackVoltage);
+  //DebugLog(flybackVoltage);
 
   // Check if the voltage is below the threshold
   if (flybackVoltage < FlybackThreshold) {
@@ -123,28 +127,41 @@ void setup() {
   
   pinMode(BatteryReadingPin, INPUT);
   pinMode(FlybackReadingPin, INPUT);
+  Serial.begin(9600);
 }
 
 void ExportToExcel() {
   // Print battery readings
   Serial.print("Battery Readings: ");
   for (int i = 0; i < NumOfBatteries; i++) {
-    Serial.print(BatteryReadingValues[i]);
-    if (i < NumOfBatteries - 1) Serial.print(", ");
+    Serial.print(BatteryReadingValues[i]*5.0/1023);
+    if (i < NumOfBatteries) Serial.print(", ");
   }
 
+    Serial.print("Transistor Writing: ");
+  for (int i = 0; i < NumOfBatteries; i++) {
+    Serial.print(digitalRead(transistor[i]));
+    if (i < NumOfBatteries) Serial.print(", ");
+  }
+
+  Serial.print(" Lowest Value: ");
+  Serial.print(LowestCharge);
+  Serial.print(" Lowest Battery: ");
+  Serial.print(LowestIndex);
+
+Serial.println(" ");
   // Print flyback voltage
-  int flybackRawValue = analogRead(FlybackReadingPin);
-  float flybackVoltage = (flybackRawValue / 1023.0) * 5.0;
-  Serial.print(", Flyback Voltage: ");
-  Serial.println(flybackVoltage);
+ // int flybackRawValue = analogRead(FlybackReadingPin);
+ // float flybackVoltage = (flybackRawValue / 1023.0) * 5.0;
+ // Serial.print(", Flyback Voltage: ");
+ // Serial.println(flybackVoltage);
 }
 
 void loop() {
   // Reading and processing logic
   ReadAll();
   CheckLowestBattery();
-  FlybackControl();
+ // FlybackControl();
 
   // Debugging or Export Logic
   if (DEBUG_MODE) {
